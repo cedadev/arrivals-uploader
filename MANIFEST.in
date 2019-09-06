@@ -1,0 +1,2 @@
+include uploader/LICENSE
+recursive-include uploader/templates *.html

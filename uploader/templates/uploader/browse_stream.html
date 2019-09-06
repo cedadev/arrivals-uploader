@@ -1,0 +1,38 @@
+{% extends "uploader/uploader_base.html" %}
+{% load uploader_tags %}
+{% load urls %}
+
+
+{% block head_title %}{{ stream.name }}{% endblock %}
+
+
+{% block content %}
+<form action="" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button action="submit">Upload</button>
+</form>
+
+<p>
+  {% add_params '' stream=stream.name dir=rel_dir|default_if_none:'' as query %}
+  <a href="{% url 'mkdir' %}{{ query }}">Make a new directory</a>
+  <a href="{% url 'fix_chars' %}{{ query }}">Fix up bad names</a>
+  <a href="{% url 'fix_empty_dir' %}{{ query }}">Remove empty dirs</a>
+  <a href="{% url 'fix_zero_length' %}{{ query }}">Remove zero length files</a>
+  <a href="{% url 'fix_unzip' %}{{ query }}">Unzip</a>
+  <a href="{% url 'fix_remove_links' %}{{ query }}">Remove links</a>
+  <a href="{% url 'fix_delete_dir' %}{{ query }}">Delete all</a>
+</p>
+
+<ul>
+  {% for item in browse_dir|list_directory %}
+  <li>
+    {% if item.is_dir %}
+    <a href="{% url 'browse' stream.name rel_dir|add:'/'|add:item.name %}">{{ item.name }}</a>
+    {% else %}
+    {{ item.name }}
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

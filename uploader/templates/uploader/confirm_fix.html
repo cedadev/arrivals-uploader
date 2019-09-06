@@ -1,0 +1,8 @@
+{% extends "uploader/uploader_base.html" %}
+
+{% block head_title %}Confirm Fix{% endblock %}
+
+
+{% block content %}
+<a href="{% url fix_type %}?confirmed=1&dir={{ rel_dir }}&stream={{ stream }}">Confirm fix</a>
+{% endblock %}

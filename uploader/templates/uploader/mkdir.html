@@ -1,0 +1,14 @@
+{% extends "uploader/uploader_base.html" %}
+
+{% block head_title %}New Directory{% endblock %}
+
+
+{% block content %}
+<form enctype="multipart/form-data" action="{% url 'mkdir' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="stream" value="{{ stream }}">
+  <input type="hidden" name="dir" value="{{ rel_dir|default_if_none:'' }}">
+  <input type="text" name="new_dir">
+  <button action="submit">Make directory</button>
+</form>
+{% endblock %}

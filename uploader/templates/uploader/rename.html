@@ -1,0 +1,15 @@
+{% extends "uploader/uploader_base.html" %}
+
+{% block head_title %}Rename{% endblock %}
+
+
+{% block content %}
+<form enctype="multipart/form-data" action="{% url 'rename' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="stream" value="{{ stream }}">
+  <input type="hidden" name="dir" value="{{ rel_dir }}">
+  <input type="hidden" name="filename" value="{{ filename }}">
+  <input type="text" name="new_name" value="{{ filename }}">
+  <button action="submit" class="btn btn-danger">Rename</button>
+</form>
+{% endblock %}

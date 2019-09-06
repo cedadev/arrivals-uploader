@@ -1,0 +1,25 @@
+{% extends "uploader/uploader_base.html" %}
+
+
+{% block head_title %}Browse{% endblock %}
+
+
+{% block content %}
+<p>Streams:</p>
+<ul>
+  {% for stream in streams %}
+  <li>
+    <a href="{% url 'browse' stream.name %}">{{ stream.name }}</a>
+  </li>
+  {% endfor %}
+</ul>
+<p>Unknown streams:</p>
+<ul>
+  {% for stream in unknown_streams %}
+  <li>
+    <a href="{% url 'browse' stream.name %}">{{ stream.name }}</a>
+  </li>
+  {% endfor %}
+</ul>
+<a href="{% url 'create_stream' %}">New</a>
+{% endblock %}
