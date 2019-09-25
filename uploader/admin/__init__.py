@@ -6,4 +6,5 @@ __copyright__ = "Copyright 2019 United Kingdom Research and Innovation"
 __license__ = "BSD - see LICENSE file in top-level package directory"
 
 
+from uploader.admin.stream_admin import StreamAdmin
 from uploader.admin.uploader_profile_admin import UploaderProfileAdmin
