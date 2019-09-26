@@ -52,5 +52,5 @@ class Stream(models.Model):
         
         super(Stream, self).save(*args, **kwargs)
     
-    def __unicode__(self):
+    def __str__(self):
         return str(self.name)

@@ -93,8 +93,10 @@ class BrowseStreamView(TemplateView, FormView):
         
         context = super(BrowseStreamView, self).get_context_data(**kwargs)
 
-        if not isinstance(stream, Stream):
+        if isinstance(stream, str):
             stream = get_stream(self.request.user, stream)
+
+        is_unknown = not isinstance(stream, Stream)
 
         arrivals_dir = self.request.user.uploaderprofile.data_directory
         browse_dir = os.path.join(arrivals_dir, stream.name)
@@ -108,6 +110,7 @@ class BrowseStreamView(TemplateView, FormView):
             "rel_dir": rel_dir,
             "stream": stream,
             "parent": parent,
+            "is_unknown": is_unknown,
         })
         return context
 
