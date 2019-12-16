@@ -15,7 +15,7 @@ with open("README.md") as readme_file:
 
 setup(
     name = "arrivals_uploader",
-    version = "1.0.0",
+    version = "1.1.0",
     description = "Django application which provides upload functionality.",
     author = "Sam Pepler",
     author_email = "sam.pepler@stfc.ac.uk",
@@ -32,6 +32,7 @@ setup(
         "django-sizefield",
         "django-extensions",
         "django-multiselectfield",
+        "django-downloadview",
         "python-dateutil",
         "pytz",
         "Unidecode",
