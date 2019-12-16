@@ -14,7 +14,7 @@ register = template.Library()
 
 
 @register.filter
-def list_directory(browse_dir):
+def list_directory(browse_dir, stream):
 
     directories = []
     files = []
@@ -22,7 +22,9 @@ def list_directory(browse_dir):
 
     for filename in filenames:
         path = os.path.join(browse_dir, filename)
+        exists = os.path.exists(path)
         is_dir = os.path.isdir(path)
+        is_file = not is_dir
 
         link_to = None
         size = None
@@ -31,11 +33,16 @@ def list_directory(browse_dir):
         else:
             size = os.path.getsize(path)
 
+        outside_stream = not os.path.realpath(path).startswith(stream.path)
+
         item = {
             'name': filename,
             'size': size,
             'is_dir': is_dir,
+            'is_file': is_file,
             'link_to': link_to,
+            'outside_stream': outside_stream,
+            'exists': exists,
         }
 
         if is_dir:

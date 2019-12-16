@@ -32,6 +32,7 @@ setup(
         "django-sizefield",
         "django-extensions",
         "django-multiselectfield",
+        "django-downloadview",
         "python-dateutil",
         "pytz",
         "Unidecode",
