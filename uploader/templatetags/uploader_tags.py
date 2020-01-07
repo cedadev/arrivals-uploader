@@ -30,7 +30,7 @@ def list_directory(browse_dir, stream):
         size = None
         if os.path.islink(path):
             link_to = os.readlink(path)
-        else:
+        elif exists:
             size = os.path.getsize(path)
 
         outside_stream = not os.path.realpath(path).startswith(stream.path)
