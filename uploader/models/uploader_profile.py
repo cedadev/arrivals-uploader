@@ -33,4 +33,4 @@ class UploaderProfile(models.Model):
             return self.data_directory
 
     def __str__(self):
-        return 'Uploader: {}'.format(self.user.username)
+        return self.user.username
