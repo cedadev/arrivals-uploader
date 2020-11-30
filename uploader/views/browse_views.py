@@ -17,6 +17,7 @@ from uploader.utils.streams import get_streams, get_stream
 from uploader.forms import UploadForm
 from uploader.decorators import data_directory_required
 from uploader.models.stream import Stream
+from uploader.storage import ArrivalsStorage
 
 
 @method_decorator(data_directory_required, name='dispatch')
@@ -48,7 +49,9 @@ class BrowseStreamView(TemplateView, FormView):
     template_name = 'uploader/browse_stream.html'
     success_url = reverse_lazy('stream')
     form_class = UploadForm
-    
+
+    storage = ArrivalsStorage()
+
     def get_form_kwargs(self):
         
         kwargs = super().get_form_kwargs()
@@ -68,13 +71,13 @@ class BrowseStreamView(TemplateView, FormView):
                       self.template_name,
                       self.get_context_data(form.stream, form.rel_dir, form=form))
     
-    def get(self, request, stream, *args, **kwargs):
+    def get(self, request, stream=None, *args, **kwargs):
         
         stream_object = get_stream(self.request.user, stream)
         if not stream_object:
             return redirect('browse')
         
-        return render(request, self.template_name, self.get_context_data(stream_object, *args, **kwargs))
+        return render(request, self.template_name, self.get_context_data(stream=stream, *args, **kwargs))
 
     def post(self, request, *args, **kwargs):
 
@@ -89,7 +92,7 @@ class BrowseStreamView(TemplateView, FormView):
         else:
             return self.form_invalid(form)
     
-    def get_context_data(self, stream, rel_dir=None, form=None, **kwargs):
+    def get_context_data(self, stream=None, rel_dir=None, **kwargs):
         
         context = super(BrowseStreamView, self).get_context_data(**kwargs)
 
@@ -114,20 +117,15 @@ class BrowseStreamView(TemplateView, FormView):
         })
         return context
 
-    @staticmethod
-    def write_file(request, form, uploaded_file):
-
-        data_directory = request.user.uploaderprofile.data_directory
+    def write_file(self, request, form, uploaded_file):
 
         if form.stream:
             rel_dir = '' if form.rel_dir == None else form.rel_dir
             rel_dir = rel_dir.strip('/')
-            
-            new_file_path = os.path.join(data_directory, form.stream, rel_dir, uploaded_file.name)
-            
-            if os.path.abspath(new_file_path).startswith(data_directory):
-                
-                # Write data
-                with open(new_file_path, 'wb+') as new_file:
-                    for chunk in uploaded_file.chunks():
-                        new_file.write(chunk)
+
+            new_file_path = self.storage.user_path(request.user, os.path.join(form.stream, rel_dir, uploaded_file.name))
+
+            # Write data
+            with open(new_file_path, 'wb+') as new_file:
+                for chunk in uploaded_file.chunks():
+                    new_file.write(chunk)

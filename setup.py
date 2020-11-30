@@ -29,7 +29,6 @@ setup(
     packages = find_packages(),
     install_requires = [
         "django",
-        "django-sizefield",
         "django-extensions",
         "django-multiselectfield",
         "django-downloadview",
