@@ -22,7 +22,7 @@ good_path_regex = re.compile('^[\w\./-]*$')
 
 
 @data_directory_required
-def mkdir(request):
+def mkdir(request,*args,**kwargs):
     """Make a directory"""
     arrivals_dir = request.user.uploaderprofile.data_directory
 
@@ -47,6 +47,7 @@ def mkdir(request):
             os.mkdir(path)
 
         url_params = { 'stream': stream }
+        url_params.update(kwargs)  # combine url_params with the request kwargs
         if rel_dir:
             url_params['rel_dir'] = rel_dir
         return redirect("browse", **url_params)
@@ -61,7 +62,7 @@ def mkdir(request):
 
 
 @data_directory_required
-def rename(request):
+def rename(request,*args,**kwargs):
     """rename a file or directory"""
     arrivals_dir = request.user.uploaderprofile.data_directory
 
@@ -82,6 +83,7 @@ def rename(request):
         os.rename(old_path, new_path)
 
         url_params = { 'stream': stream }
+        url_params.update(kwargs)  # combine url_params with the request kwargs
         if rel_dir:
             url_params['rel_dir'] = rel_dir
         return redirect("browse", **url_params)
@@ -94,7 +96,7 @@ def rename(request):
 
 
 @data_directory_required
-def delete_file(request):
+def delete_file(request,*args,**kwargs):
     """Delete a file or empty directory"""
     arrivals_dir = request.user.uploaderprofile.data_directory
 
@@ -135,7 +137,7 @@ def delete_file(request):
 
 
 @data_directory_required
-def fix(request, fix_type, fix_info, fix_function):
+def fix(request, fix_type, fix_info, fix_function,*args,**kwargs):
     """Apply a fix a direcory"""
     arrivals_dir = request.user.uploaderprofile.data_directory
 
@@ -153,12 +155,13 @@ def fix(request, fix_type, fix_info, fix_function):
         fix_function(path)
 
     url_params = { 'stream': stream }
+    url_params.update(kwargs)  # combine url_params with the request kwargs
     if rel_dir:
         url_params['rel_dir'] = rel_dir
     return redirect("browse", **url_params)
 
 
-def fix_chars(request):
+def fix_chars(request,*args,**kwargs):
     """Apply a fix to bad characters in file names"""
 
     # make fix function
@@ -182,7 +185,7 @@ def fix_chars(request):
                 become underscores and other charaters are mapped to plain ASCII or removed.""", fix_filenames)
 
 
-def fix_unzip(request):
+def fix_unzip(request,*args,**kwargs):
     """Apply a fix to unzip any .zip files"""
 
     # make fix function
@@ -199,7 +202,7 @@ def fix_unzip(request):
     return fix(request, "fix_unzip", """Expand compressed or aggregated files like .zip, .tar, .gz.""", _fix_unzip)
 
 
-def fix_zero(request):
+def fix_zero(request,*args,**kwargs):
     """Apply a fix to remove zero length files"""
 
     # make fix function
@@ -215,7 +218,7 @@ def fix_zero(request):
     return fix(request, "fix_zero_length", """Remove any files with no content.""", _fix_zero)
 
 
-def fix_empty(request):
+def fix_empty(request,*args,**kwargs):
     """Apply a fix to remove empty directories"""
 
     # make fix function
@@ -228,7 +231,7 @@ def fix_empty(request):
     return fix(request, "fix_empty_dir", """Remove any empty directories.""", _fix_empty)
 
 
-def fix_delete_dir(request):
+def fix_delete_dir(request,*args,**kwargs):
     """Apply a fix to remove empty directories"""
 
     # make fix function
@@ -245,7 +248,7 @@ def fix_delete_dir(request):
     return fix(request, "fix_delete_dir", """Recursively delete this directory.""", _fix_delete_dir)
 
 
-def fix_links(request):
+def fix_links(request,*args,**kwargs):
     """Apply a fix to remove symlinks"""
 
     def _fix_links(start_dir):
