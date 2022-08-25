@@ -124,6 +124,7 @@ def delete_file(request,*args,**kwargs):
             pass
 
         url_params = { 'stream': stream }
+        url_params.update(kwargs) # combine url_params with the request kwargs
         if rel_dir:
             url_params['rel_dir'] = rel_dir
         return redirect("browse", **url_params)
@@ -182,7 +183,7 @@ def fix_chars(request,*args,**kwargs):
                     os.rename(path, new_path)
 
     return fix(request, "fix_chars", """Change filenames so that & and + become _and_, @ becomes _at_, spaces
-                become underscores and other charaters are mapped to plain ASCII or removed.""", fix_filenames)
+                become underscores and other charaters are mapped to plain ASCII or removed.""", fix_filenames, **kwargs)
 
 
 def fix_unzip(request,*args,**kwargs):
@@ -199,7 +200,7 @@ def fix_unzip(request,*args,**kwargs):
                         z.extractall(directory)
                         os.unlink(path)
 
-    return fix(request, "fix_unzip", """Expand compressed or aggregated files like .zip, .tar, .gz.""", _fix_unzip)
+    return fix(request, "fix_unzip", """Expand compressed or aggregated files like .zip, .tar, .gz.""", _fix_unzip,**kwargs)
 
 
 def fix_zero(request,*args,**kwargs):
@@ -215,7 +216,7 @@ def fix_zero(request,*args,**kwargs):
                     os.unlink(path)
                     print("REMOVE zero length file %s " % path)
 
-    return fix(request, "fix_zero_length", """Remove any files with no content.""", _fix_zero)
+    return fix(request, "fix_zero_length", """Remove any files with no content.""", _fix_zero,**kwargs)
 
 
 def fix_empty(request,*args,**kwargs):
@@ -228,7 +229,7 @@ def fix_empty(request,*args,**kwargs):
                 print("Removing Empty directory")
                 os.rmdir(directory)
 
-    return fix(request, "fix_empty_dir", """Remove any empty directories.""", _fix_empty)
+    return fix(request, "fix_empty_dir", """Remove any empty directories.""", _fix_empty,**kwargs)
 
 
 def fix_delete_dir(request,*args,**kwargs):
@@ -245,7 +246,7 @@ def fix_delete_dir(request,*args,**kwargs):
             elif os.path.isdir(path):
                 shutil.rmtree(path)
 
-    return fix(request, "fix_delete_dir", """Recursively delete this directory.""", _fix_delete_dir)
+    return fix(request, "fix_delete_dir", """Recursively delete this directory.""", _fix_delete_dir,**kwargs)
 
 
 def fix_links(request,*args,**kwargs):
@@ -259,4 +260,4 @@ def fix_links(request,*args,**kwargs):
                     os.unlink(path)
                     print("REMOVE - %s " % path)
 
-    return fix(request, "fix_remove_links", """Remove any symbolic links.""", _fix_links)
+    return fix(request, "fix_remove_links", """Remove any symbolic links.""", _fix_links,**kwargs)
