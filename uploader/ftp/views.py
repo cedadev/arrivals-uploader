@@ -12,13 +12,13 @@ from uploader.ftp.forms import FtpPasswordChangeForm
 from uploader.ftp.utils import generate_visible_ftp_password, set_ftp_password
 
 
-def ftp_random_password(request):
+def ftp_random_password(request,**kwargs):
     
     generate_visible_ftp_password(request.user)
-    return redirect('browse')
+    return redirect('browse',**kwargs)
 
 
-def ftp_access(request):
+def ftp_access(request,**kwargs):
     
     if request.method=='POST':
         
@@ -30,7 +30,7 @@ def ftp_access(request):
             
             set_ftp_password(request.user, password)
             
-            return redirect('browse')
+            return redirect('browse',**kwargs)
     
     else:
         form = FtpPasswordChangeForm()
