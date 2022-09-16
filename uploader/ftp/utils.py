@@ -42,27 +42,27 @@ def set_ftp_password(user, password, is_visible=False):
     command = (f'ftpasswd --passwd --name={username} --uid={uid} --gid={gid} '
                f'--home={data_directory} --shell=/bin/false --file={auth_user_file}')
     
-    # try:
+    try:
         
-    #     child = pexpect.spawn(command, cwd=ftp_files_directory, timeout=5)
+        child = pexpect.spawn(command, cwd=ftp_files_directory, timeout=5)
         
-    #     # Supply password
-    #     child.expect('[Pp]assword:')
-    #     child.sendline(password)
-    #     child.expect('[Pp]assword:')
-    #     child.sendline(password)
+        # Supply password
+        child.expect('[Pp]assword:')
+        child.sendline(password)
+        child.expect('[Pp]assword:')
+        child.sendline(password)
         
-    #     child.expect(pexpect.EOF)
+        child.expect(pexpect.EOF)
         
-    # except pexpect.TIMEOUT:
+    except pexpect.TIMEOUT:
         
-    #     logger.error('Timeout running FTP command')
-    #     raise FtpCommandTimeout('Command timeout')
+        logger.error('Timeout running FTP command')
+        raise FtpCommandTimeout('Command timeout')
     
-    # # Make the password visible on the user's FTP account page
-    # if is_visible:
-    #     user.uploaderprofile.visible_ftp_password = password
-    # else:
-    #     user.uploaderprofile.visible_ftp_password = ''
+    # Make the password visible on the user's FTP account page
+    if is_visible:
+        user.uploaderprofile.visible_ftp_password = password
+    else:
+        user.uploaderprofile.visible_ftp_password = ''
     
-    # user.uploaderprofile.save()
+    user.uploaderprofile.save()
