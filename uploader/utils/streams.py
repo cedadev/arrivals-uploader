@@ -125,6 +125,25 @@ def get_streams(user, include_unknown=False):
     else:
         return streams
 
+def update_stream(user, new_name, old_name, stored=True):
+    if os.path.basename(new_name) != new_name:
+        raise ValueError("'{}' is not a valid new stream name".format(new_name))
+        return False
+
+    data_directory = get_data_directory(user)
+    new_path = os.path.join(data_directory, new_name)
+    old_path = os.path.join(data_directory, old_name)
+    
+    if not os.path.abspath(new_path).startswith(data_directory):
+        raise ValueError("Path '{}' not in user data directory".format(stream_path))
+        return False
+
+    if not os.path.exists(new_path):
+        
+        os.rename(old_path, new_path) 
+        return True
+    else:
+        return False
 
 def create_stream(user, stream_name, stored=True):
     
