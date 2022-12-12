@@ -139,9 +139,14 @@ def update_stream(user, new_name, old_name, stored=True):
         return False
 
     if not os.path.exists(new_path):
+        os.rename(old_path, new_path)
+
+        stream = Stream.objects.get(name=old_name)
+        stream.name = new_name
+        stream.path = new_path
         
-        os.rename(old_path, new_path) 
-        return True
+        stream.save()
+        return stream
     else:
         return False
 
