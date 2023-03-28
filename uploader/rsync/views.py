@@ -12,13 +12,13 @@ from uploader.rsync.forms import RsyncPasswordChangeForm
 from uploader.rsync.utils import generate_visible_rsync_password, set_rsync_password
 
 
-def rsync_random_password(request):
+def rsync_random_password(request,**kwargs):
     
     generate_visible_rsync_password(request.user)
-    return redirect('browse')
+    return redirect('browse',**kwargs)
 
 
-def rsync_access(request):
+def rsync_access(request,**kwargs):
     
     if request.method=='POST':
         
@@ -30,7 +30,7 @@ def rsync_access(request):
             
             set_rsync_password(request.user, password)
             
-            return redirect('browse')
+            return redirect('browse',**kwargs)
     
     else:
         form = RsyncPasswordChangeForm()
