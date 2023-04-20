@@ -94,13 +94,17 @@ def get_streams(user, include_unknown=False):
     
     try:
         data_directory = get_data_directory(user)
-        directory_names = os.listdir(data_directory)
+        directory_names = []
+        for item in os.listdir(data_directory):
+            fullitem = os.path.join(data_directory, item)
+            if os.path.isdir(fullitem):
+                directory_names.append(item)
         
     except NoUploaderProfile:
         return []
     except (NoDataDirectory, MissingDataDirectory):
         directory_names = []
-    
+    print(directory_names)
     streams = []
     stream_names = []
     for stream in Stream.objects.filter(owner=user.uploaderprofile):
