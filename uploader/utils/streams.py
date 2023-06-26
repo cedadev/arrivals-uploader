@@ -8,6 +8,7 @@ __license__ = "BSD - see LICENSE file in top-level package directory"
 
 import os
 import logging
+import re
 
 from collections import namedtuple
 from django.conf import settings
@@ -97,7 +98,8 @@ def get_streams(user, include_unknown=False):
         directory_names = []
         for item in os.listdir(data_directory):
             fullitem = os.path.join(data_directory, item)
-            if os.path.isdir(fullitem):
+            pattern = '^[0-9a-zA-Z-_]*$' # Added regex check
+            if os.path.isdir(fullitem) and bool(re.search(pattern, item)):
                 directory_names.append(item)
         
     except NoUploaderProfile:
