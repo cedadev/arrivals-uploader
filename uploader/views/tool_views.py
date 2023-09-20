@@ -225,11 +225,11 @@ def fix_empty(request,*args,**kwargs):
 
     # make fix function
     def _fix_empty(start_dir):
-        for directory, dirs, files in os.walk(start_dir, topdown=False):
-            if directory == start_dir:
-                pass
-            if len(dirs) == 0 and len(files) == 0:
-                print("Removing Empty directory")
+        for directory, _, files in os.walk(start_dir, topdown=False):
+            if directory == start_dir:  # Never remove the top level directory
+                continue
+            if len(os.listdir(directory)) == 0 and len(files) == 0:
+                print(f"Removing Empty directory {directory}")
                 os.rmdir(directory)
 
     return fix(request, "fix_empty_dir", """Remove any empty directories.""", _fix_empty,**kwargs)
