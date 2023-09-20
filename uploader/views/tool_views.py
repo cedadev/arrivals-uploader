@@ -78,7 +78,7 @@ def rename(request,*args,**kwargs):
         new_path = os.path.normpath(new_path)
 
         # check for badness
-        assert new_path.startswith(arrivals_dir)
+        assert new_path.startswith(os.path.join(arrivals_dir, stream))
 
         os.rename(old_path, new_path)
 
