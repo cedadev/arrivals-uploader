@@ -220,7 +220,8 @@ def fix_zero(request,*args,**kwargs):
 
 
 def fix_empty(request,*args,**kwargs):
-    """Apply a fix to remove empty directories"""
+    """Apply a fix to remove empty directories - including directories that contain only other empty directories.
+    Does not remove the top level directory."""
 
     # make fix function
     def _fix_empty(start_dir):
