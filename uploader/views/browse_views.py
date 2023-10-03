@@ -75,7 +75,7 @@ class BrowseStreamView(TemplateView, FormView):
         
         stream_object = get_stream(self.request.user, stream)
         if not stream_object:
-            return redirect('browse')
+            return redirect('browse', *args, **kwargs)
         
         return render(request, self.template_name, self.get_context_data(stream=stream, *args, **kwargs))
 

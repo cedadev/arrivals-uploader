@@ -138,7 +138,7 @@ def delete_file(request,*args,**kwargs):
 
 
 @data_directory_required
-def fix(request, fix_type, fix_info, fix_function,*args,**kwargs):
+def fix(request, fix_type, fix_info, fix_function, *args, **kwargs):
     """Apply a fix a direcory"""
     arrivals_dir = request.user.uploaderprofile.data_directory
 
@@ -152,8 +152,8 @@ def fix(request, fix_type, fix_info, fix_function,*args,**kwargs):
     if "confirmed" not in request.GET:
         return render(request, 'uploader/confirm_fix.html',
                       {"fix_type": fix_type, 'fix_info': fix_info, "rel_dir": rel_dir, "stream":stream})
-    else:
-        fix_function(path)
+
+    fix_function(path)
 
     url_params = { 'stream': stream }
     url_params.update(kwargs)  # combine url_params with the request kwargs
@@ -183,7 +183,7 @@ def fix_chars(request,*args,**kwargs):
                     os.rename(path, new_path)
 
     return fix(request, "fix_chars", """Change filenames so that & and + become _and_, @ becomes _at_, spaces
-                become underscores and other charaters are mapped to plain ASCII or removed.""", fix_filenames, **kwargs)
+                become underscores and other characters are mapped to plain ASCII or removed.""", fix_filenames, **kwargs)
 
 
 def fix_unzip(request,*args,**kwargs):
