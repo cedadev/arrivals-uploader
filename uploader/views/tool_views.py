@@ -16,9 +16,9 @@ from zipfile import ZipFile
 from django.shortcuts import render, redirect
 from uploader.utils.streams import get_stream
 from uploader.decorators import data_directory_required
+import uploader.utils.tools as tools
 
 
-good_path_regex = re.compile('^[\w\./-]*$')
 
 
 @data_directory_required
@@ -32,19 +32,13 @@ def mkdir(request,*args,**kwargs):
         stream = request.POST["stream"]
         rel_dir = request.POST["dir"]
         new_dir = request.POST["new_dir"]
-        path = os.path.join(arrivals_dir, stream, rel_dir, new_dir)
-        path = os.path.normpath(path)
 
         # check stream defined
         if not get_stream(request.user, stream):
             return render(request, "uploader/error.html", context={"error_message": "Need an upload route to make a directory"})
 
-        # check for badness
-        if not path.startswith(arrivals_dir):
-            return render(request, "uploader/error.html", context={"error_message": "Could not make sense of directory name"})
-
-        if not os.path.exists(path):
-            os.mkdir(path)
+        if not tools.mkdir(os.path.join(arrivals_dir, stream), rel_dir, new_dir):
+            return render(request, "uploader/error.html", context={"error_message": "Could not make new dir"})
 
         url_params = { 'stream': stream }
         url_params.update(kwargs)  # combine url_params with the request kwargs
@@ -73,14 +67,9 @@ def rename(request,*args,**kwargs):
         rel_dir = request.POST["dir"]
         old_filename = request.POST["filename"]
         new_filename = request.POST["new_name"]
-        old_path = os.path.join(arrivals_dir, stream, rel_dir, old_filename)
-        new_path = os.path.join(arrivals_dir, stream, rel_dir, new_filename)
-        new_path = os.path.normpath(new_path)
 
-        # check for badness
-        assert new_path.startswith(os.path.join(arrivals_dir, stream))
-
-        os.rename(old_path, new_path)
+        if not tools.rename(os.path.join(arrivals_dir, stream), rel_dir, old_filename, new_filename):
+            raise Exception("Could not rename file")
 
         url_params = { 'stream': stream }
         url_params.update(kwargs)  # combine url_params with the request kwargs
@@ -106,22 +95,11 @@ def delete_file(request,*args,**kwargs):
         stream = request.POST["stream"]
         rel_dir = request.POST["dir"]
         filename = request.POST["filename"]
-        path = os.path.join(arrivals_dir, stream, rel_dir, filename)
-        path = os.path.normpath(path)
 
-        # check for badness
-        assert path.startswith(arrivals_dir)
+        stream_dir = os.path.join(arrivals_dir, stream)
 
-        if os.path.islink(path):
-            os.unlink(path)
-        elif not os.path.exists(path):
-            pass
-        elif os.path.isfile(path):
-            os.unlink(path)
-        elif os.path.isdir(path) and len(os.listdir(path)) == 0:
-            os.rmdir(path)
-        else:
-            pass
+        if not tools.delete_file(stream_dir, rel_dir, filename):
+            raise Exception("Could not delete file")
 
         url_params = { 'stream': stream }
         url_params.update(kwargs) # combine url_params with the request kwargs
@@ -133,8 +111,9 @@ def delete_file(request,*args,**kwargs):
         stream = request.GET["stream"]
         rel_dir = request.GET["dir"]
         filename = request.GET["filename"]
-        return render(request, "uploader/delete_confirm.html", context={"stream": stream, "rel_dir": rel_dir,
-                                                               "filename": filename})
+        return render(request, "uploader/delete_confirm.html", 
+                      context={"stream": stream, "rel_dir": rel_dir, "filename": filename}
+                      )
 
 
 @data_directory_required
@@ -146,9 +125,9 @@ def fix(request, fix_type, fix_info, fix_function, *args, **kwargs):
         # create a form instance and populate it with data from the request:
         stream = request.GET["stream"]
         rel_dir = request.GET["dir"]
-        path = os.path.join(arrivals_dir, stream, rel_dir)
-        path = os.path.normpath(path)
-
+        path = tools.join_norm_and_check_path(arrivals_dir, stream, rel_dir)
+        if not path:  # Fail
+            return redirect("browse", **url_params)
     if "confirmed" not in request.GET:
         return render(request, 'uploader/confirm_fix.html',
                       {"fix_type": fix_type, 'fix_info': fix_info, "rel_dir": rel_dir, "stream":stream})
@@ -164,103 +143,40 @@ def fix(request, fix_type, fix_info, fix_function, *args, **kwargs):
 
 def fix_chars(request,*args,**kwargs):
     """Apply a fix to bad characters in file names"""
-
-    # make fix function
-    def fix_filenames(start_dir):
-        for directory, dirs, files in os.walk(start_dir, topdown=False):
-            for f in files + dirs:
-                path = os.path.join(directory, f)
-                if not good_path_regex.match(f):
-                    new_name = unidecode.unidecode(f)
-                    new_name = re.sub('%20', '_', new_name).strip()
-                    new_name = re.sub('[+&]', '_and_', new_name).strip()
-                    new_name = re.sub('[@]', '_at_', new_name).strip()
-                    new_name = re.sub('[^\w\s\.-]', '', new_name).strip()
-                    new_name = re.sub('\s+', '_', new_name)
-                    print(new_name)
-
-                    new_path = os.path.join(directory, new_name)
-                    os.rename(path, new_path)
-
     return fix(request, "fix_chars", """Change filenames so that & and + become _and_, @ becomes _at_, spaces
-                become underscores and other characters are mapped to plain ASCII or removed.""", fix_filenames, **kwargs)
+                become underscores and other characters are mapped to plain ASCII or removed.""", 
+                tools.fix_filenames, **kwargs)
 
 
 def fix_unzip(request,*args,**kwargs):
     """Apply a fix to unzip any .zip files"""
-
-    # make fix function
-    def _fix_unzip(start_dir):
-        for directory, _, files in os.walk(start_dir):
-            for f in files:
-                _, ext = os.path.splitext(f)
-                if ext == ".zip":
-                    path = os.path.join(directory, f)
-                    with ZipFile(path) as z:
-                        z.extractall(directory)
-                        os.unlink(path)
-
-    return fix(request, "fix_unzip", """Expand compressed or aggregated files like .zip, .tar, .gz.""", _fix_unzip,**kwargs)
+    return fix(request, "fix_unzip", """Expand compressed or aggregated files like .zip, .tar, .gz.""", 
+               tools.fix_unzip,**kwargs)
 
 
 def fix_zero(request,*args,**kwargs):
     """Apply a fix to remove zero length files"""
 
-    # make fix function
-    def _fix_zero(start_dir):
-        for directory, _, files in os.walk(start_dir):
-            for f in files:
-                path = os.path.join(directory, f)
-                size = os.path.getsize(path)
-                if size == 0:
-                    os.unlink(path)
-                    print("REMOVE zero length file %s " % path)
-
-    return fix(request, "fix_zero_length", """Remove any files with no content.""", _fix_zero,**kwargs)
+    return fix(request, "fix_zero_length", """Remove any files with no content.""", 
+               tools.fix_zero,**kwargs)
 
 
 def fix_empty(request,*args,**kwargs):
     """Apply a fix to remove empty directories - including directories that contain only other empty directories.
     Does not remove the top level directory."""
 
-    # make fix function
-    def _fix_empty(start_dir):
-        for directory, _, files in os.walk(start_dir, topdown=False):
-            if directory == start_dir:  # Never remove the top level directory
-                continue
-            if len(os.listdir(directory)) == 0 and len(files) == 0:
-                print(f"Removing Empty directory {directory}")
-                os.rmdir(directory)
-
-    return fix(request, "fix_empty_dir", """Remove any empty directories.""", _fix_empty,**kwargs)
+    return fix(request, "fix_empty_dir", """Remove any empty directories.""", 
+               tools.fix_empty,**kwargs)
 
 
 def fix_delete_dir(request,*args,**kwargs):
     """Apply a fix to remove empty directories"""
 
-    # make fix function
-    def _fix_delete_dir(start_dir):
-        for f in os.listdir(start_dir):
-            path = os.path.join(start_dir, f)
-            if os.path.islink(path):
-                os.unlink(path)
-            elif os.path.isfile(path):
-                os.unlink(path)
-            elif os.path.isdir(path):
-                shutil.rmtree(path)
-
-    return fix(request, "fix_delete_dir", """Recursively delete this directory.""", _fix_delete_dir,**kwargs)
+    return fix(request, "fix_delete_dir", """Recursively delete this directory.""", 
+               tools.fix_delete_dir,**kwargs)
 
 
 def fix_links(request,*args,**kwargs):
     """Apply a fix to remove symlinks"""
-
-    def _fix_links(start_dir):
-        for directory, dirs, files in os.walk(start_dir):
-            for f in files + dirs:
-                path = os.path.join(directory, f)
-                if os.path.islink(path):
-                    os.unlink(path)
-                    print("REMOVE - %s " % path)
-
-    return fix(request, "fix_remove_links", """Remove any symbolic links.""", _fix_links,**kwargs)
+    return fix(request, "fix_remove_links", """Remove any symbolic links.""", 
+               tools.fix_links,**kwargs)
