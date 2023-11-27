@@ -57,10 +57,9 @@ def delete_file(stream_dir, relative_dir, file):
     elif os.path.isfile(full_path):
         os.unlink(full_path)
     elif os.path.isdir(full_path):
-        if len(os.listdir(full_path)) == 0:
-            os.rmdir(full_path)
-        else:
-            return False
+        if len(os.listdir(full_path)) != 0:
+            fix_delete_dir(full_path)
+        os.rmdir(full_path)
 
     return True
 
