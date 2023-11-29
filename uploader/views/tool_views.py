@@ -170,7 +170,7 @@ def fix_empty(request,*args,**kwargs):
 
 
 def fix_delete_dir(request,*args,**kwargs):
-    """Apply a fix to remove empty directories"""
+    """Apply a fix to remove directory"""
 
     return fix(request, "fix_delete_dir", """Recursively delete this directory.""", 
                tools.fix_delete_dir,**kwargs)
