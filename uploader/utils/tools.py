@@ -2,8 +2,13 @@ import os
 import re
 import unidecode
 import shutil
+from multiprocessing import Process
+import logging
 
 from zipfile import ZipFile
+
+
+logger = logging.getLogger(__name__)
 
 
 def join_norm_and_check_path(base, relative, file) -> str:
@@ -57,9 +62,16 @@ def delete_file(stream_dir, relative_dir, file):
     elif os.path.isfile(full_path):
         os.unlink(full_path)
     elif os.path.isdir(full_path):
-        if len(os.listdir(full_path)) != 0:
-            fix_delete_dir(full_path)
-        os.rmdir(full_path)
+        if len(os.listdir(full_path)) == 0:
+            os.rmdir(full_path)
+        else:
+            root, dir = os.path.split(full_path)
+            new_name = root + "/.deleting-folder-{dir}"
+            if not rename(root, "", dir, ".deleting-folder-{dir}"):
+                return False
+            p = Process(target=_delete_directory_recursive, args=(new_name, True))
+            p.start()
+            p.join(2)
 
     return True
 
@@ -112,15 +124,28 @@ def fix_empty(start_dir):
             os.rmdir(directory)
 
 
+def _delete_directory_recursive(start_dir, delete_root=False):
+    try:
+        for f in os.listdir(start_dir):
+            path = os.path.join(start_dir, f)
+            if os.path.islink(path):
+                os.unlink(path)
+            elif os.path.isfile(path):
+                os.unlink(path)
+            elif os.path.isdir(path):
+                shutil.rmtree(path)
+        if delete_root:
+            os.rmdir(start_dir)
+    except OSError as e:
+        logger.error(f"Error while Deleting files in folder `{start_dir}` - {e}")
+        raise e
+
+
 def fix_delete_dir(start_dir):
-    for f in os.listdir(start_dir):
-        path = os.path.join(start_dir, f)
-        if os.path.islink(path):
-            os.unlink(path)
-        elif os.path.isfile(path):
-            os.unlink(path)
-        elif os.path.isdir(path):
-            shutil.rmtree(path)
+    # Deleting can take a long time when there are many large files
+    p = Process(target=_delete_directory_recursive, args=(start_dir, False))
+    p.start()
+    p.join(2)  # wait for the delete thread to reduce issues, unless it takes a very long time
 
 
 def fix_links(start_dir):
