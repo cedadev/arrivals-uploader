@@ -38,9 +38,10 @@ def rename(stream_dir, relative_dir, old_file, new_file) -> bool:
 
     if not full_path or not new_full_path:
         return False
-    
     if not os.path.exists(full_path):
         return False
+    if full_path == new_full_path:
+        return True
     if os.path.exists(new_full_path):
         return False
     
