@@ -4,6 +4,8 @@ import unidecode
 import shutil
 from multiprocessing import Process
 import logging
+from multiprocessing import Process
+import logging
 
 from zipfile import ZipFile
 
@@ -38,9 +40,10 @@ def rename(stream_dir, relative_dir, old_file, new_file) -> bool:
 
     if not full_path or not new_full_path:
         return False
-    
     if not os.path.exists(full_path):
         return False
+    if full_path == new_full_path:
+        return True
     if os.path.exists(new_full_path):
         return False
     
@@ -57,21 +60,26 @@ def delete_file(stream_dir, relative_dir, file):
     if not os.path.exists(full_path):
         return False
     
+    def is_empty_dir(path):
+        return os.path.isdir(path) and len(os.listdir(path)) == 0
+    
+    def is_non_empty_dir(path):
+        return os.path.isdir(path) and len(os.listdir(path)) != 0
+    
     if os.path.islink(full_path):
         os.unlink(full_path)
     elif os.path.isfile(full_path):
         os.unlink(full_path)
-    elif os.path.isdir(full_path):
-        if len(os.listdir(full_path)) == 0:
-            os.rmdir(full_path)
-        else:
-            root, dir = os.path.split(full_path)
-            new_name = root + "/.deleting-folder-{dir}"
-            if not rename(root, "", dir, ".deleting-folder-{dir}"):
-                return False
-            p = Process(target=_delete_directory_recursive, args=(new_name, True))
-            p.start()
-            p.join(2)
+    elif is_empty_dir(full_path):
+        os.rmdir(full_path)
+    elif is_non_empty_dir(full_path):
+        root, dir = os.path.split(full_path)
+        new_name = root + "/.deleting-folder-{dir}"
+        if not rename(root, "", dir, ".deleting-folder-{dir}"):
+            return False
+        p = Process(target=_delete_directory_recursive, args=(new_name, True))
+        p.start()
+        p.join(2)
 
     return True
 
