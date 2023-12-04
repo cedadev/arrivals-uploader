@@ -4,8 +4,13 @@ import unidecode
 import shutil
 from multiprocessing import Process
 import logging
+from multiprocessing import Process
+import logging
 
 from zipfile import ZipFile
+
+
+logger = logging.getLogger(__name__)
 
 
 logger = logging.getLogger(__name__)
