@@ -13,9 +13,6 @@ from zipfile import ZipFile
 logger = logging.getLogger(__name__)
 
 
-logger = logging.getLogger(__name__)
-
-
 def join_norm_and_check_path(base, relative, file) -> str:
     full_path = os.path.join(base, relative, file)
     full_path = os.path.normpath(full_path)
