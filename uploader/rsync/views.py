@@ -7,15 +7,15 @@ __license__ = "BSD - see LICENSE file in top-level package directory"
 
 
 from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
 
 from uploader.rsync.forms import RsyncPasswordChangeForm
 from uploader.rsync.utils import generate_visible_rsync_password, set_rsync_password
 
 
 def rsync_random_password(request,**kwargs):
-    
     generate_visible_rsync_password(request.user)
-    return redirect('browse',**kwargs)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 def rsync_access(request,**kwargs):

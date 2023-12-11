@@ -7,15 +7,16 @@ __license__ = "BSD - see LICENSE file in top-level package directory"
 
 
 from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
 
 from uploader.ftp.forms import FtpPasswordChangeForm
 from uploader.ftp.utils import generate_visible_ftp_password, set_ftp_password
 
 
 def ftp_random_password(request,**kwargs):
-    
     generate_visible_ftp_password(request.user)
-    return redirect('browse',**kwargs)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
 
 
 def ftp_access(request,**kwargs):
