@@ -15,7 +15,6 @@ from uploader.ftp.utils import generate_visible_ftp_password, set_ftp_password
 
 def ftp_random_password(request,**kwargs):
     generate_visible_ftp_password(request.user)
-    # return redirect('browse',**kwargs)
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
