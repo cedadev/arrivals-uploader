@@ -15,7 +15,7 @@ from uploader.rsync.utils import generate_visible_rsync_password, set_rsync_pass
 
 def rsync_random_password(request,**kwargs):
     generate_visible_rsync_password(request.user)
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    return HttpResponseRedirect(request.headers.get('referer', '/'))
 
 
 def rsync_access(request,**kwargs):
