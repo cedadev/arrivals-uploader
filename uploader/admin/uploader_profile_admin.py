@@ -19,6 +19,7 @@ class UploaderProfileChangeForm(forms.ModelForm):
         fields = ('data_directory',)
 
 
+@admin.register(UploaderProfile)
 class UploaderProfileAdmin(admin.ModelAdmin):
     
     form = UploaderProfileChangeForm
@@ -26,4 +27,3 @@ class UploaderProfileAdmin(admin.ModelAdmin):
     readonly_fields = ('data_directory',)
 
 
-admin.site.register(UploaderProfile, UploaderProfileAdmin)

@@ -19,6 +19,7 @@ class StreamChangeForm(forms.ModelForm):
         fields = ('owner', 'path', 'name',)
 
 
+@admin.register(Stream)
 class StreamAdmin(admin.ModelAdmin):
     
     form = StreamChangeForm
@@ -26,4 +27,3 @@ class StreamAdmin(admin.ModelAdmin):
     readonly_fields = ('owner', 'path',)
 
 
-admin.site.register(Stream, StreamAdmin)
