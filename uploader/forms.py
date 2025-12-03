@@ -12,15 +12,34 @@ from django.forms import Form, ValidationError
 from django.template.defaultfilters import filesizeformat
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+
 class UploadForm(Form):
     
     # Default 2GB upload size
     MAX_FILE_SIZE = getattr(settings, 'MAX_UPLOAD_SIZE', 1024*1024*1024*2)
     
-    files = forms.FileField(
-        widget=forms.ClearableFileInput(attrs={'multiple': True})
-    )
-    
+    files = MultipleFileField(label='Select files', required=False)
+
+    class Meta:
+        fields = ["files", ]
+
     def __init__(self, stream=None, rel_dir=None, *args, **kwargs):
         
         self.request = kwargs.pop("request")
